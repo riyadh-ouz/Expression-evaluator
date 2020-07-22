@@ -53,6 +53,7 @@ int eval(const string& exp) {
             do {
                 x = 10 * x + (exp[i] - '0');
                 i++;
+                if (i == exp.length()) break;
             } while (exp[i] >= '0' && exp[i] <= '9');
 
             operands.push(x);
@@ -119,6 +120,7 @@ int main()
 {
     assert(eval("14/5*(6-88)") == (14 / 5 * (6 - 88)));
     assert(eval("656-757*(9+9)") == (656 - 757 * (9 + 9)));
+    assert(eval("589") == 589);
     cout << "All tests have been passed successfully";
     return 0;
 }
