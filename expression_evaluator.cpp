@@ -44,6 +44,7 @@ void evaluate(stack<T>& operands, stack<char>& operators) {
         operands.push(b * a);
         break;
     case '/':
+        if (a == 0) throw Error("ZeroDivision");
         operands.push(b / a);
         break;
     default:
@@ -177,6 +178,7 @@ int main()
         // cout << eval<double>("14..05 / 0.5 + (100 * 20) - 9 / 8") << endl;
         // cout << eval<double>("14.0.5 / 0.5 + (100 * 20) - 9 / 8") << endl;
         // cout << eval<double>("14.05 / / 0.5 + (100 * 20) - 9 / 8") << endl;
+        // cout << eval<int>("14 * 5 + (55 - 20) - 9 / 0");
 
         cout << eval<float>("14 / 5 + (100 * 20) - 9 / 8") << endl;
         cout << eval<int>("14 / 5 + (100 * 20) - 9 / 8") << endl;
