@@ -1,14 +1,34 @@
 #include <iostream>
 #include <stack>
-#include <cassert>
+#include <exception>
+#include <string>
 
 using namespace std;
 
-void evaluate(stack<int>& operands, stack<char>& operators) {
+class Error : public exception
+{
+public:
+    Error(string const& desc = "Unknown Error") throw()
+        :m_desc(desc)
+    {}
+    virtual const char* what() const throw()
+    {
+        return m_desc.c_str();
+    }
 
-    int a = operands.top();
+    virtual ~Error() throw()
+    {}
+
+private:
+    string m_desc;
+};
+
+template <typename T>
+void evaluate(stack<T>& operands, stack<char>& operators) {
+
+    T a = operands.top();
     operands.pop();
-    int b = operands.top();
+    T b = operands.top();
     operands.pop();
 
     switch (operators.top()) {
@@ -25,8 +45,9 @@ void evaluate(stack<int>& operands, stack<char>& operators) {
     case '/':
         operands.push(b / a);
         break;
-
-        // handle default case;
+    default:
+        throw Error("Invalid Operator");
+        break;
 
     }
 
@@ -35,26 +56,42 @@ void evaluate(stack<int>& operands, stack<char>& operators) {
 int precedence(char o) {
     if (o == '+' || o == '-') return 0;
     else if (o == '*' || o == '/') return 1;
-    // case: functions as the pow or ^
-    // else throw an error
+    // case: math functions as the pow or ^
+    else throw Error("Invalid Operator");
 }
 
-int eval(const string& exp) {
+template <typename T>
+T eval(string const& exp) {
 
-    stack<int> operands;
+    stack<T> operands;
     stack<char> operators;
 
-    for (int i = 0; i < exp.length(); i++) {
-
+    for (unsigned i = 0; i < exp.length(); i++) {
         // case: operand
         if (exp[i] >= '0' && exp[i] <= '9') {
-            // enhancement: get the float operand
-            int x = 0;
+
+            T x = 0;
+            unsigned unit;
             do {
-                x = 10 * x + (exp[i] - '0');
+                unit = exp[i] - '0';
+                x = 10 * x + unit;
                 i++;
                 if (i == exp.length()) break;
             } while (exp[i] >= '0' && exp[i] <= '9');
+
+            if (exp[i] == '.') {
+                i++;
+                unsigned puiss = 10;
+                while (exp[i] >= '0' && exp[i] <= '9')
+                {
+                    unit = exp[i] - '0';
+                    x += (T) unit / puiss;
+                    puiss *= 10;
+                    i++;
+                    if (i == exp.length()) break;
+                }
+
+            }
 
             operands.push(x);
             // to reset to the current place after incrementation
@@ -63,8 +100,13 @@ int eval(const string& exp) {
 
         // case: operator
         else if (exp[i] == '+' || exp[i] == '-' || exp[i] == '*' || exp[i] == '/') {
-
-            if (operators.empty() || operators.top() == '(') operators.push(exp[i]);
+            unsigned j = i - 1;
+            while (j >= 0 && exp[j] == ' ') {
+                j--;
+            }
+            if (exp[j] == '+' || exp[j] == '-' || exp[j] == '*' || exp[j] == '/')
+                throw Error("Invalid Expression::Double Operator");
+            else if (operators.empty() || operators.top() == '(') operators.push(exp[i]);
             else if (precedence(exp[i]) > precedence(operators.top())) operators.push(exp[i]);
             else {
 
@@ -96,8 +138,12 @@ int eval(const string& exp) {
 
         }
 
-        // case: else throw an error
+        // case: space
+        else if (exp[i] == ' ') continue;
 
+        // case: Invalid Expression
+        else throw Error("Invalid Expression::Unknown Character");
+        
     }
 
 
@@ -118,10 +164,18 @@ int eval(const string& exp) {
 
 int main()
 {
-    assert(eval("14/5*(6-88)") == (14 / 5 * (6 - 88)));
-    assert(eval("656-757*(9+9)") == (656 - 757 * (9 + 9)));
-    assert(eval("589") == 589);
-    cout << "All tests have been passed successfully";
+    
+    try {
+        
+        cout << eval<double>("14.005 /   / 0.5 + (100 * 20) - 9 / 8") << endl;
+        cout << eval<float>("14 / 5 + (100 * 20) - 9 / 8") << endl;
+        cout << eval<int>("14 / 5 + (100 * 20) - 9 / 8") << endl;
+
+    }
+    catch (std::exception const& e) {
+        cerr << "Error: " << e.what();
+    }
+    
     return 0;
 }
 
