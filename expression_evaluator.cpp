@@ -1,7 +1,8 @@
 #include <iostream>
 #include <stack>
-#include <exception>
 #include <string>
+#include <exception>
+#include <cassert>
 
 using namespace std;
 
@@ -100,12 +101,15 @@ T eval(string const& exp) {
 
         // case: operator
         else if (exp[i] == '+' || exp[i] == '-' || exp[i] == '*' || exp[i] == '/') {
+            
+            // testing double operators
             unsigned j = i - 1;
             while (j >= 0 && exp[j] == ' ') {
                 j--;
             }
             if (exp[j] == '+' || exp[j] == '-' || exp[j] == '*' || exp[j] == '/')
                 throw Error("Invalid Expression::Double Operator");
+
             else if (operators.empty() || operators.top() == '(') operators.push(exp[i]);
             else if (precedence(exp[i]) > precedence(operators.top())) operators.push(exp[i]);
             else {
@@ -166,10 +170,17 @@ int main()
 {
     
     try {
-        
-        cout << eval<double>("14.005 /   / 0.5 + (100 * 20) - 9 / 8") << endl;
+        assert(eval<int>("14 * 5 + (55 - 20) - 9 / 8") == 14 * 5 + (55 - 20) - 9 / 8);
+
+        // Testing errors:
+        // cout << eval<double>("14.05 /f 0.5 + (100 * 20) - 9 / 8") << endl;
+        // cout << eval<double>("14..05 / 0.5 + (100 * 20) - 9 / 8") << endl;
+        // cout << eval<double>("14.0.5 / 0.5 + (100 * 20) - 9 / 8") << endl;
+        // cout << eval<double>("14.05 / / 0.5 + (100 * 20) - 9 / 8") << endl;
+
         cout << eval<float>("14 / 5 + (100 * 20) - 9 / 8") << endl;
         cout << eval<int>("14 / 5 + (100 * 20) - 9 / 8") << endl;
+        cout << "All tests have been passed successfully" << endl;
 
     }
     catch (std::exception const& e) {
