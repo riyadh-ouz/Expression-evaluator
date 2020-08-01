@@ -68,9 +68,16 @@ T eval(string const& exp) {
     stack<T> operands;
     stack<char> operators;
 
+    // To track the last element
+    char last = '0';
+    int open_p = 0;
+
     for (unsigned i = 0; i < exp.length(); i++) {
+        
         // case: operand
         if (exp[i] >= '0' && exp[i] <= '9') {
+            // test for duplicated operands
+            if (last == 'N') throw Error("Invalid Expression::Duplicated Operand");
 
             T x = 0;
             unsigned unit;
@@ -96,6 +103,8 @@ T eval(string const& exp) {
             }
 
             operands.push(x);
+            last = 'N';
+
             // to reset to the current place after incrementation
             i--;
         }
@@ -103,15 +112,10 @@ T eval(string const& exp) {
         // case: operator
         else if (exp[i] == '+' || exp[i] == '-' || exp[i] == '*' || exp[i] == '/') {
             
-            // testing double operators
-            unsigned j = i - 1;
-            while (j >= 0 && exp[j] == ' ') {
-                j--;
-            }
-            if (exp[j] == '+' || exp[j] == '-' || exp[j] == '*' || exp[j] == '/')
-                throw Error("Invalid Expression::Double Operator");
+            // test for duplicated operators
+            if (last == 'O') throw Error("Invalid Expression::Duplicated Operator");
 
-            else if (operators.empty() || operators.top() == '(') operators.push(exp[i]);
+            if (operators.empty() || operators.top() == '(') operators.push(exp[i]);
             else if (precedence(exp[i]) > precedence(operators.top())) operators.push(exp[i]);
             else {
 
@@ -124,14 +128,20 @@ T eval(string const& exp) {
 
                 operators.push(exp[i]);
             }
+            
+            last = 'O';
 
         }
 
         // case: open parentheses
-        else if (exp[i] == '(') operators.push('(');
+        else if (exp[i] == '(') {
+            operators.push('(');
+            open_p++;
+        }
 
         // case: close parantheses
         else if (exp[i] == ')') {
+            if (open_p < 1) throw Error("Invalid Expression::Unmatched ')'");
 
             do {
 
@@ -139,7 +149,9 @@ T eval(string const& exp) {
                 operators.pop();
 
             } while (operators.top() != '(');
+
             operators.pop();
+            open_p--;
 
         }
 
@@ -178,6 +190,8 @@ int main()
         // cout << eval<double>("14..05 / 0.5 + (100 * 20) - 9 / 8") << endl;
         // cout << eval<double>("14.0.5 / 0.5 + (100 * 20) - 9 / 8") << endl;
         // cout << eval<double>("14.05 / / 0.5 + (100 * 20) - 9 / 8") << endl;
+        // cout << eval<float>("14 20 / 5 + (100 * 20) - 9 / 8") << endl;
+        // cout << eval<float>("14 / 5 + (100 * 20)) - 9 / 8") << endl;
         // cout << eval<int>("14 * 5 + (55 - 20) - 9 / 0");
 
         cout << eval<float>("14 / 5 + (100 * 20) - 9 / 8") << endl;
