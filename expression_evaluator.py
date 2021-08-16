@@ -30,7 +30,7 @@ def precedence(operator):
     else: raise ValueError
 
 
-def evalExp(exp):
+def eval_exp(exp):
 
     operands = []
     operators = []
@@ -138,8 +138,8 @@ if __name__ == "__main__":
             test = input('Enter expression to evaluate: ')
             if test == 'Q':
                 break
-            assert eval(test) == evalExp(test)
-            print(evalExp(test))
+            assert eval(test) == eval_exp(test)
+            print(eval_exp(test))
         
 
     except SyntaxError:
